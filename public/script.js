@@ -5,6 +5,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const detectBtn = document.getElementById('detectDistrict');
     const resultsDiv = document.getElementById('results');
 
+    // Static districts for Andhra Pradesh
+    const districts = [
+        'ALLURI SITHARAMA RAJU',
+        'ANAKAPALLI',
+        'ANANTHAPURAMU',
+        'ANNAMAYYA',
+        'BAPATLA',
+        'CHITTOOR',
+        'DR. B.R. AMBEDKAR KONASEEMA',
+        'EAST GODAVARI',
+        'ELURU',
+        'GUNTUR',
+        'KAKINADA',
+        'KRISHNA',
+        'KURNOOL',
+        'NANDYAL',
+        'NTR',
+        'PALNADU',
+        'PARVATHIPURAM MANYAM',
+        'PRAKASAM',
+        'SRI POTTI SRIRAMULU NELLORE',
+        'SRI SATHYA SAI',
+        'SRIKAKULAM',
+        'TIRUPATI',
+        'VISAKHAPATNAM',
+        'VIZIANAGARAM',
+        'WEST GODAVARI',
+        'YSR KADAPA'
+    ];
+
+    // Static sample data for demonstration
+    const staticData = [
+        {
+            month: 'Feb',
+            year: '2024-2025',
+            data: {
+                employment_generated: 123456,
+                households_covered: 789,
+                total_expenditure: 12345678,
+                works_completed: 123
+            }
+        }
+    ];
+
     // Populate states dynamically
     fetchStates();
 
@@ -41,19 +85,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function fetchDistricts(state) {
-        // Fetch districts from API
-        fetch(`/api/districts/${state}`)
-            .then(response => response.json())
-            .then(districts => {
-                districtSelect.innerHTML = '<option value="">Select District</option>';
-                districts.forEach(district => {
-                    const option = document.createElement('option');
-                    option.value = district;
-                    option.textContent = district;
-                    districtSelect.appendChild(option);
-                });
-                districtSelect.disabled = false;
-            });
+        // Use static districts for Andhra Pradesh
+        districtSelect.innerHTML = '<option value="">Select District</option>';
+        districts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            districtSelect.appendChild(option);
+        });
+        districtSelect.disabled = false;
     }
 
     function fetchStates() {
@@ -66,11 +106,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fetchData(state, district) {
-        fetch(`/api/data/${state}/${district}`)
-            .then(response => response.json())
-            .then(data => {
-                displayData(data);
-            });
+        // Use static data for demonstration
+        displayData(staticData);
     }
 
     function displayData(data) {
