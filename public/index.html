@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGNREGA Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Our Voice, Our Rights - MGNREGA Dashboard</h1>
+        <div class="form-group">
+            <label for="state">Select State:</label>
+            <select id="state">
+                <option value="">Choose a state</option>
+                <!-- Add state options -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="district">Select District:</label>
+            <select id="district" disabled>
+                <option value="">Choose a district</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <button id="detectDistrict">Detect My District (Bonus)</button>
+            <button id="submit">Get Data</button>
+        </div>
+        <div id="results"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
