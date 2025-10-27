@@ -14,13 +14,24 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Redis client for caching
-const redisClient = redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
+// Redis client for caching (optional for local development)
+let redisClient;
+try {
+  redisClient = redis.createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379'
+  });
 
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-redisClient.connect();
+  redisClient.on('error', (err) => {
+    console.log('Redis Client Error (caching disabled):', err.message);
+    redisClient = null; // Disable caching if Redis fails
+  });
+
+  await redisClient.connect();
+  console.log('Redis connected successfully');
+} catch (error) {
+  console.log('Redis not available, caching disabled:', error.message);
+  redisClient = null;
+}
 
 // i18n configuration
 i18n.configure({
@@ -50,16 +61,24 @@ app.get('/api/states', async (req, res) => {
 app.get('/api/districts/:state', async (req, res) => {
   try {
     const cacheKey = `districts:${req.params.state}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
+
+    // Check cache if Redis is available
+    if (redisClient) {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) {
+        return res.json(JSON.parse(cached));
+      }
     }
 
     const query = 'SELECT DISTINCT district FROM mgnrega_data WHERE state = $1 ORDER BY district';
     const result = await pool.query(query, [req.params.state]);
     const districts = result.rows.map(row => row.district);
 
-    await redisClient.setEx(cacheKey, 3600, JSON.stringify(districts)); // Cache for 1 hour
+    // Cache result if Redis is available
+    if (redisClient) {
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(districts)); // Cache for 1 hour
+    }
+
     res.json(districts);
   } catch (error) {
     console.error('Error fetching districts:', error);
@@ -71,9 +90,13 @@ app.get('/api/data/:state/:district', async (req, res) => {
   try {
     const { state, district } = req.params;
     const cacheKey = `data:${state}:${district}`;
-    const cached = await redisClient.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
+
+    // Check cache if Redis is available
+    if (redisClient) {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) {
+        return res.json(JSON.parse(cached));
+      }
     }
 
     // Fetch data from database
@@ -120,7 +143,11 @@ app.get('/api/data/:state/:district', async (req, res) => {
       }
     }
 
-    await redisClient.setEx(cacheKey, 1800, JSON.stringify(data)); // Cache for 30 minutes
+    // Cache result if Redis is available
+    if (redisClient) {
+      await redisClient.setEx(cacheKey, 1800, JSON.stringify(data)); // Cache for 30 minutes
+    }
+
     res.json(data);
   } catch (error) {
     console.error('Error fetching data:', error);
