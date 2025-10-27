@@ -14,23 +14,34 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Redis client for caching (optional for local development)
-let redisClient;
-try {
-  redisClient = redis.createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-  });
+// Redis client for caching (optional for local development) - lazy initialization
+let redisClient = null;
 
-  redisClient.on('error', (err) => {
-    console.log('Redis Client Error (caching disabled):', err.message);
-    redisClient = null; // Disable caching if Redis fails
-  });
+function getRedisClient() {
+  if (redisClient === null) {
+    try {
+      redisClient = redis.createClient({
+        url: process.env.REDIS_URL || 'redis://localhost:6379'
+      });
 
-  await redisClient.connect();
-  console.log('Redis connected successfully');
-} catch (error) {
-  console.log('Redis not available, caching disabled:', error.message);
-  redisClient = null;
+      redisClient.on('error', (err) => {
+        console.log('Redis Client Error (caching disabled):', err.message);
+        redisClient = null; // Disable caching if Redis fails
+      });
+
+      // Connect asynchronously
+      redisClient.connect().then(() => {
+        console.log('Redis connected successfully');
+      }).catch((error) => {
+        console.log('Redis not available, caching disabled:', error.message);
+        redisClient = null;
+      });
+    } catch (error) {
+      console.log('Redis not available, caching disabled:', error.message);
+      redisClient = null;
+    }
+  }
+  return redisClient;
 }
 
 // i18n configuration
@@ -63,10 +74,15 @@ app.get('/api/districts/:state', async (req, res) => {
     const cacheKey = `districts:${req.params.state}`;
 
     // Check cache if Redis is available
-    if (redisClient) {
-      const cached = await redisClient.get(cacheKey);
-      if (cached) {
-        return res.json(JSON.parse(cached));
+    const redis = getRedisClient();
+    if (redis) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return res.json(JSON.parse(cached));
+        }
+      } catch (cacheError) {
+        console.log('Cache read failed, proceeding without cache');
       }
     }
 
@@ -75,8 +91,12 @@ app.get('/api/districts/:state', async (req, res) => {
     const districts = result.rows.map(row => row.district);
 
     // Cache result if Redis is available
-    if (redisClient) {
-      await redisClient.setEx(cacheKey, 3600, JSON.stringify(districts)); // Cache for 1 hour
+    if (redis) {
+      try {
+        await redis.setEx(cacheKey, 3600, JSON.stringify(districts)); // Cache for 1 hour
+      } catch (cacheError) {
+        console.log('Cache write failed, continuing without cache');
+      }
     }
 
     res.json(districts);
@@ -92,10 +112,15 @@ app.get('/api/data/:state/:district', async (req, res) => {
     const cacheKey = `data:${state}:${district}`;
 
     // Check cache if Redis is available
-    if (redisClient) {
-      const cached = await redisClient.get(cacheKey);
-      if (cached) {
-        return res.json(JSON.parse(cached));
+    const redis = getRedisClient();
+    if (redis) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return res.json(JSON.parse(cached));
+        }
+      } catch (cacheError) {
+        console.log('Cache read failed, proceeding without cache');
       }
     }
 
@@ -144,8 +169,12 @@ app.get('/api/data/:state/:district', async (req, res) => {
     }
 
     // Cache result if Redis is available
-    if (redisClient) {
-      await redisClient.setEx(cacheKey, 1800, JSON.stringify(data)); // Cache for 30 minutes
+    if (redis) {
+      try {
+        await redis.setEx(cacheKey, 1800, JSON.stringify(data)); // Cache for 30 minutes
+      } catch (cacheError) {
+        console.log('Cache write failed, continuing without cache');
+      }
     }
 
     res.json(data);
