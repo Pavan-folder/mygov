@@ -1,20 +1,10 @@
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 
-// Define MGNREGA data schema
-const MgnregaSchema = new mongoose.Schema({
-  state: String,
-  district: String,
-  month: String,
-  year: String,
-  data: Object
+// PostgreSQL connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/mgnrega',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
-
-const Mgnrega = mongoose.model('Mgnrega', MgnregaSchema);
-
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/mgnrega')
-  .then(() => console.log('MongoDB connected for sample data insertion'))
-  .catch(err => console.log(err));
 
 async function insertSampleData() {
   const districts = [
@@ -47,27 +37,24 @@ async function insertSampleData() {
   ];
 
   for (const district of districts) {
-    const existingData = await Mgnrega.findOne({
-      state: 'ANDHRA PRADESH',
-      district: district,
-      year: '2024-2025'
-    });
+    const checkQuery = 'SELECT id FROM mgnrega_data WHERE state = $1 AND district = $2 AND year = $3';
+    const existing = await pool.query(checkQuery, ['ANDHRA PRADESH', district, '2024-2025']);
 
-    if (!existingData) {
-      const sampleData = new Mgnrega({
-        state: 'ANDHRA PRADESH',
-        district: district,
-        month: null, // Annual data
-        year: '2024-2025',
-        data: {
-          employment_generated: Math.floor(Math.random() * 500000) + 100000,
-          households_covered: Math.floor(Math.random() * 300000) + 50000,
-          total_expenditure: Math.floor(Math.random() * 50000) + 10000,
-          works_completed: Math.floor(Math.random() * 20000) + 1000
-        }
-      });
-
-      await sampleData.save();
+    if (existing.rows.length === 0) {
+      const insertQuery = `
+        INSERT INTO mgnrega_data (state, district, month, year, employment_generated, households_covered, total_expenditure, works_completed)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `;
+      await pool.query(insertQuery, [
+        'ANDHRA PRADESH',
+        district,
+        null, // Annual data
+        '2024-2025',
+        Math.floor(Math.random() * 500000) + 100000,
+        Math.floor(Math.random() * 300000) + 50000,
+        Math.floor(Math.random() * 50000) + 10000,
+        Math.floor(Math.random() * 20000) + 1000
+      ]);
       console.log(`Inserted sample data for ${district}`);
     } else {
       console.log(`Data already exists for ${district}`);
@@ -75,7 +62,7 @@ async function insertSampleData() {
   }
 
   console.log('Sample data insertion completed');
-  mongoose.connection.close();
+  await pool.end();
 }
 
 // Run the function

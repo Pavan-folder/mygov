@@ -1,26 +1,36 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 const axios = require('axios');
 const path = require('path');
+const redis = require('redis');
+const i18n = require('i18n');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/mgnrega')
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
-
-// Define MGNREGA data schema
-const MgnregaSchema = new mongoose.Schema({
-  state: String,
-  district: String,
-  month: String,
-  year: String,
-  data: Object
+// PostgreSQL connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/mgnrega',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-const Mgnrega = mongoose.model('Mgnrega', MgnregaSchema);
+// Redis client for caching
+const redisClient = redis.createClient({
+  url: process.env.REDIS_URL || 'redis://localhost:6379'
+});
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+redisClient.connect();
+
+// i18n configuration
+i18n.configure({
+  locales: ['en', 'hi', 'te'],
+  directory: path.join(__dirname, 'locales'),
+  defaultLocale: 'en',
+  cookie: 'locale'
+});
+
+app.use(i18n.init);
 
 // Middleware
 app.use(express.json());
@@ -29,7 +39,7 @@ app.set('view engine', 'ejs');
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('index');
+  res.render('index', { __: res.__ });
 });
 
 app.get('/api/states', async (req, res) => {
@@ -38,66 +48,93 @@ app.get('/api/states', async (req, res) => {
 });
 
 app.get('/api/districts/:state', async (req, res) => {
-  const state = req.params.state;
-  // Fetch districts from database
-  const districts = await Mgnrega.distinct('district', { state });
-  res.json(districts.sort());
+  try {
+    const cacheKey = `districts:${req.params.state}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
+    const query = 'SELECT DISTINCT district FROM mgnrega_data WHERE state = $1 ORDER BY district';
+    const result = await pool.query(query, [req.params.state]);
+    const districts = result.rows.map(row => row.district);
+
+    await redisClient.setEx(cacheKey, 3600, JSON.stringify(districts)); // Cache for 1 hour
+    res.json(districts);
+  } catch (error) {
+    console.error('Error fetching districts:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.get('/api/data/:state/:district', async (req, res) => {
-  const { state, district } = req.params;
-  // Fetch data from database or API
-  const data = await Mgnrega.find({ state, district }).sort({ year: -1, month: -1 });
-
-  // If no data in database, try to fetch from API
-  if (data.length === 0) {
-    try {
-      const apiKey = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b';
-      const baseUrl = 'https://api.data.gov.in/resource/ee03643a-ee4c-48c2-ac30-9f2ff26ab722';
-      const apiUrl = `${baseUrl}?api-key=${apiKey}&format=json&offset=0&limit=100&filters[state_name]=${encodeURIComponent(state)}&filters[district_name]=${encodeURIComponent(district)}`;
-
-      const response = await axios.get(apiUrl);
-      const apiData = response.data;
-
-      if (apiData.records && apiData.records.length > 0) {
-        // Store new data
-        for (const record of apiData.records) {
-          const existingData = await Mgnrega.findOne({
-            state: record.state_name,
-            district: record.district_name,
-            month: record.month_name,
-            year: record.fin_year
-          });
-
-          if (!existingData) {
-            const mgnregaData = new Mgnrega({
-              state: record.state_name,
-              district: record.district_name,
-              month: record.month_name,
-              year: record.fin_year,
-              data: {
-                employment_generated: parseInt(record.persondays) || 0,
-                households_covered: parseInt(record.households) || 0,
-                total_expenditure: parseFloat(record.expenditure) || 0,
-                works_completed: parseInt(record.works) || 0
-              }
-            });
-
-            await mgnregaData.save();
-          }
-        }
-
-        // Return the newly stored data
-        const newData = await Mgnrega.find({ state, district }).sort({ year: -1, month: -1 });
-        res.json(newData);
-        return;
-      }
-    } catch (error) {
-      console.error('Error fetching from API:', error.message);
+  try {
+    const { state, district } = req.params;
+    const cacheKey = `data:${state}:${district}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
     }
-  }
 
-  res.json(data);
+    // Fetch data from database
+    const query = 'SELECT * FROM mgnrega_data WHERE state = $1 AND district = $2 ORDER BY year DESC, month DESC';
+    const result = await pool.query(query, [state, district]);
+    let data = result.rows;
+
+    // If no data in database, try to fetch from API
+    if (data.length === 0) {
+      try {
+        const apiKey = process.env.API_KEY || '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b';
+        const baseUrl = 'https://api.data.gov.in/resource/ee03643a-ee4c-48c2-ac30-9f2ff26ab722';
+        const apiUrl = `${baseUrl}?api-key=${apiKey}&format=json&offset=0&limit=100&filters[state_name]=${encodeURIComponent(state)}&filters[district_name]=${encodeURIComponent(district)}`;
+
+        const response = await axios.get(apiUrl);
+        const apiData = response.data;
+
+        if (apiData.records && apiData.records.length > 0) {
+          // Store new data
+          for (const record of apiData.records) {
+            const insertQuery = `
+              INSERT INTO mgnrega_data (state, district, month, year, employment_generated, households_covered, total_expenditure, works_completed)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              ON CONFLICT (state, district, month, year) DO NOTHING
+            `;
+            await pool.query(insertQuery, [
+              record.state_name,
+              record.district_name,
+              record.month_name,
+              record.fin_year,
+              parseInt(record.persondays) || 0,
+              parseInt(record.households) || 0,
+              parseFloat(record.expenditure) || 0,
+              parseInt(record.works) || 0
+            ]);
+          }
+
+          // Return the newly stored data
+          const newResult = await pool.query(query, [state, district]);
+          data = newResult.rows;
+        }
+      } catch (error) {
+        console.error('Error fetching from API:', error.message);
+      }
+    }
+
+    await redisClient.setEx(cacheKey, 1800, JSON.stringify(data)); // Cache for 30 minutes
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Language switching route
+app.post('/set-locale/:locale', (req, res) => {
+  const locale = req.params.locale;
+  if (['en', 'hi', 'te'].includes(locale)) {
+    res.cookie('locale', locale);
+  }
+  res.redirect('back');
 });
 
 // Start server

@@ -1,64 +1,114 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.language-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.lang-btn {
+    padding: 8px 16px;
+    border: 2px solid #4CAF50;
+    background: white;
+    color: #4CAF50;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.lang-btn:hover,
+.lang-btn.active {
+    background: #4CAF50;
+    color: white;
 }
 
 h1 {
     text-align: center;
     color: #333;
+    font-size: 2.2em;
+    margin-bottom: 10px;
+    font-weight: 700;
 }
 
 .subtitle {
     text-align: center;
     color: #666;
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 30px;
+    line-height: 1.4;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 16px;
 }
 
 select, button {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
     font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+select:focus, button:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 button {
-    background-color: #4CAF50;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
     color: white;
     cursor: pointer;
     margin-top: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 button:hover {
-    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .button-group {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 15px;
+    margin-top: 15px;
 }
 
 .button-group button {
@@ -67,11 +117,11 @@ button:hover {
 }
 
 #detectDistrict {
-    background-color: #2196F3;
+    background: linear-gradient(135deg, #2196F3 0%, #0b7dda 100%);
 }
 
 #detectDistrict:hover {
-    background-color: #0b7dda;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
 #results {

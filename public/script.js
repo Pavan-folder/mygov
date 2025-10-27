@@ -5,6 +5,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const detectBtn = document.getElementById('detectDistrict');
     const resultsDiv = document.getElementById('results');
 
+    // Language switching
+    const langBtns = document.querySelectorAll('.lang-btn');
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lang = this.dataset.lang;
+            fetch(`/set-locale/${lang}`, { method: 'POST' })
+                .then(() => location.reload());
+        });
+    });
+
     // Static districts for Andhra Pradesh
     const districts = [
         'ALLURI SITHARAMA RAJU',

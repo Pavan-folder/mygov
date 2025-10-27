@@ -1,33 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= res.locals.locale || 'en' %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MGNREGA Dashboard</title>
+    <meta name="description" content="<%= __('MGNREGA Dashboard - Understand your district\'s performance in India\'s largest welfare program') %>">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <title><%= __('MGNREGA Dashboard') %></title>
     <link rel="stylesheet" href="/styles.css">
+    <!-- PWA support -->
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
     <div class="container">
-        <h1>Our Voice, Our Rights - MGNREGA Dashboard</h1>
-        <p class="subtitle">Understand your district's performance in India's largest welfare program</p>
+        <header>
+            <h1><%= __('Our Voice, Our Rights - MGNREGA Dashboard') %></h1>
+            <p class="subtitle"><%= __('Understand your district\'s performance in India\'s largest welfare program') %></p>
+            <div class="language-selector">
+                <button id="lang-en" class="lang-btn" data-lang="en">English</button>
+                <button id="lang-hi" class="lang-btn" data-lang="hi">हिंदी</button>
+                <button id="lang-te" class="lang-btn" data-lang="te">తెలుగు</button>
+            </div>
+        </header>
+
         <div class="form-group">
-            <label for="state">Select State:</label>
-            <select id="state">
-                <option value="">Select State</option>
+            <label for="state"><%= __('Select State:') %></label>
+            <select id="state" aria-label="<%= __('Select State') %>">
+                <option value=""><%= __('Select State') %></option>
                 <!-- States will be populated dynamically -->
             </select>
         </div>
         <div class="form-group">
-            <label for="district">Select District:</label>
-            <select id="district" disabled>
-                <option value="">Select District</option>
+            <label for="district"><%= __('Select District:') %></label>
+            <select id="district" disabled aria-label="<%= __('Select District') %>">
+                <option value=""><%= __('Select District') %></option>
             </select>
         </div>
         <div class="button-group">
-            <button id="detectDistrict">Detect My District (Bonus)</button>
-            <button id="submit">Get Data</button>
+            <button id="detectDistrict" aria-label="<%= __('Detect My District') %>"><%= __('Detect My District (Bonus)') %></button>
+            <button id="submit" aria-label="<%= __('Get Data') %>"><%= __('Get Data') %></button>
         </div>
-        <div id="results"></div>
+        <div id="results" role="main" aria-live="polite"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/script.js"></script>
