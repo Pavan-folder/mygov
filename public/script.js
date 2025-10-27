@@ -352,117 +352,82 @@ document.addEventListener('DOMContentLoaded', function() {
             // Northern Coastal Andhra (Visakhapatnam region)
             if (lat >= 17.0 && lat <= 19.0 && lon >= 81.0 && lon <= 85.0) {
                 if (lat >= 17.5 && lon >= 83.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'VISAKHAPATNAM';
-                        alert('Detected your location: Visakhapatnam District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'VISAKHAPATNAM';
+                    alert('Detected your location: Visakhapatnam District, Andhra Pradesh');
                 } else if (lat >= 17.0 && lon >= 82.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'ANAKAPALLI';
-                        alert('Detected your location: Anakapalli District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'ANAKAPALLI';
+                    alert('Detected your location: Anakapalli District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'SRIKAKULAM';
-                        alert('Detected your location: Srikakulam District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'SRIKAKULAM';
+                    alert('Detected your location: Srikakulam District, Andhra Pradesh');
                 }
             }
             // East Godavari and surrounding areas
             else if (lat >= 16.0 && lat <= 18.0 && lon >= 80.0 && lon <= 83.0) {
                 if (lon >= 81.5) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'EAST GODAVARI';
-                        alert('Detected your location: East Godavari District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'EAST GODAVARI';
+                    alert('Detected your location: East Godavari District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'WEST GODAVARI';
-                        alert('Detected your location: West Godavari District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'WEST GODAVARI';
+                    alert('Detected your location: West Godavari District, Andhra Pradesh');
                 }
             }
             // Krishna, Guntur, and surrounding areas
             else if (lat >= 15.0 && lat <= 17.0 && lon >= 78.0 && lon <= 82.0) {
                 if (lat >= 16.0 && lon >= 80.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'KRISHNA';
-                        alert('Detected your location: Krishna District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'KRISHNA';
+                    alert('Detected your location: Krishna District, Andhra Pradesh');
                 } else if (lat >= 15.5 && lon >= 79.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'GUNTUR';
-                        alert('Detected your location: Guntur District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'GUNTUR';
+                    alert('Detected your location: Guntur District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'PRAKASAM';
-                        alert('Detected your location: Prakasam District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'PRAKASAM';
+                    alert('Detected your location: Prakasam District, Andhra Pradesh');
                 }
             }
             // Rayalaseema region (southern Andhra Pradesh)
             else if (lat >= 12.0 && lat <= 15.0 && lon >= 76.0 && lon <= 81.0) {
                 if (lat >= 14.0 && lon >= 78.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'YSR KADAPA';
-                        alert('Detected your location: YSR Kadapa District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'YSR KADAPA';
+                    alert('Detected your location: YSR Kadapa District, Andhra Pradesh');
                 } else if (lat >= 13.0 && lon >= 77.0) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'ANANTHAPURAMU';
-                        alert('Detected your location: Ananthapuramu District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'ANANTHAPURAMU';
+                    alert('Detected your location: Ananthapuramu District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'KURNOOL';
-                        alert('Detected your location: Kurnool District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'KURNOOL';
+                    alert('Detected your location: Kurnool District, Andhra Pradesh');
                 }
             }
             // Central Andhra regions
             else if (lat >= 14.0 && lat <= 16.0 && lon >= 77.0 && lon <= 80.0) {
                 if (lon >= 78.5) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'NANDYAL';
-                        alert('Detected your location: Nandyal District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'NANDYAL';
+                    alert('Detected your location: Nandyal District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'KURNOOL';
-                        alert('Detected your location: Kurnool District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'KURNOOL';
+                    alert('Detected your location: Kurnool District, Andhra Pradesh');
                 }
             }
             // Nellore and surrounding areas
             else if (lat >= 13.0 && lat <= 15.0 && lon >= 78.0 && lon <= 82.0) {
-                fetchDistricts('ANDHRA PRADESH').then(() => {
-                    districtSelect.value = 'SRI POTTI SRIRAMULU NELLORE';
-                    alert('Detected your location: Sri Potti Sreeramulu Nellore District, Andhra Pradesh');
-                });
+                districtSelect.value = 'SRI POTTI SRIRAMULU NELLORE';
+                alert('Detected your location: Sri Potti Sreeramulu Nellore District, Andhra Pradesh');
             }
             // Chittoor and Tirupati areas
             else if (lat >= 12.5 && lat <= 14.0 && lon >= 77.0 && lon <= 80.0) {
                 if (lat >= 13.5) {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'TIRUPATI';
-                        alert('Detected your location: Tirupati District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'TIRUPATI';
+                    alert('Detected your location: Tirupati District, Andhra Pradesh');
                 } else {
-                    fetchDistricts('ANDHRA PRADESH').then(() => {
-                        districtSelect.value = 'CHITTOOR';
-                        alert('Detected your location: Chittoor District, Andhra Pradesh');
-                    });
+                    districtSelect.value = 'CHITTOOR';
+                    alert('Detected your location: Chittoor District, Andhra Pradesh');
                 }
             }
             // Default fallback for Andhra Pradesh - pick a major district
             else {
                 // Instead of showing generic message, pick the most likely district based on coordinates
-                fetchDistricts('ANDHRA PRADESH').then(() => {
-                    // Default to a central district
-                    districtSelect.value = 'GUNTUR';
-                    alert('Location detected in Andhra Pradesh. Defaulting to Guntur District. Please select your specific district if different.');
-                });
+                districtSelect.value = 'GUNTUR';
+                alert('Location detected in Andhra Pradesh. Defaulting to Guntur District. Please select your specific district if different.');
             }
         } else {
             alert('Location detected outside Andhra Pradesh. Please select your state and district manually.');
