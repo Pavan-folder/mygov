@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
         option.value = 'ANDHRA PRADESH';
         option.textContent = 'ANDHRA PRADESH';
         stateSelect.appendChild(option);
+        // Auto-select Andhra Pradesh and populate districts
+        stateSelect.value = 'ANDHRA PRADESH';
+        fetchDistricts('ANDHRA PRADESH');
     }
 
     function fetchData(state, district) {
